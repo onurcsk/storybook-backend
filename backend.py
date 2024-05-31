@@ -104,6 +104,10 @@ async def generate_story_endpoint(
     story = generate_story(genre, num_words, num_characters, reader_age, character_names_list, character_genders_list, image_captions)
     return JSONResponse(content={"story": story})
 
+@app.get("/")
+def hello():
+    return {'greetings' : 'hello story lovers!'}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
