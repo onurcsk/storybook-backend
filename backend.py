@@ -1,13 +1,13 @@
-from fastapi import FastAPI, File, UploadFile, Form, HTTPException
+from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import JSONResponse
 from PIL import Image
 from transformers import AutoProcessor, AutoModelForCausalLM
-from google.cloud import aiplatform
-from vertexai.generative_models import GenerativeModel
-import vertexai.preview.generative_models as generative_models
 import os
 from io import BytesIO
 import hashlib
+from google.cloud import aiplatform
+from vertexai.generative_models import GenerativeModel
+import vertexai.preview.generative_models as generative_models
 
 app = FastAPI()
 
@@ -19,9 +19,9 @@ processor = AutoProcessor.from_pretrained("microsoft/git-large-r-coco")
 model = AutoModelForCausalLM.from_pretrained("microsoft/git-large-r-coco")
 
 def generate_caption(image):
-    inputs = processor(images=image, return_tensors="pt").to("cpu")
-    outputs = model.generate(**inputs)
-    caption = processor.decode(outputs[0], skip_special_tokens=True)
+    pixel_values = processor(images=image, return_tensors="pt").pixel_values
+    generated_ids = model.generate(pixel_values=pixel_values, max_length=50)
+    caption = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
     return caption
 
 def hash_image(image):
@@ -80,12 +80,9 @@ def generate_story(genre, num_words, num_characters, reader_age, character_names
 
 @app.post("/generate_caption/")
 async def generate_image_caption(file: UploadFile = File(...)):
-    try:
-        image = Image.open(file.file).convert("RGB")
-        caption = generate_caption(image)
-        return JSONResponse(content={"caption": caption})
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    image = Image.open(file.file)
+    caption = generate_caption(image)
+    return JSONResponse(content={"caption": caption})
 
 @app.post("/generate_story/")
 async def generate_story_endpoint(
@@ -97,14 +94,12 @@ async def generate_story_endpoint(
     character_genders: str = Form(None),
     image_captions: str = Form(None)
 ):
-    try:
-        character_names_list = [name.strip() for name in character_names.split(",")] if character_names else []
-        character_genders_list = [gender.strip() for gender in character_genders.split(",")] if character_genders else []
-        image_captions = [caption.strip() for caption in image_captions.split(",")] if image_captions else []
-        story = generate_story(genre, num_words, num_characters, reader_age, character_names_list, character_genders_list, image_captions)
-        return JSONResponse(content={"story": story})
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    character_names_list = [name.strip() for name in character_names.split(",")] if character_names else []
+    character_genders_list = [gender.strip() for gender in character_genders.split(",")] if character_genders else []
+    
+    image_captions = [caption.strip() for caption in image_captions.split(",")] if image_captions else []
+    story = generate_story(genre, num_words, num_characters, reader_age, character_names_list, character_genders_list, image_captions)
+    return JSONResponse(content={"story": story})
 
 @app.get("/")
 def hello():
