@@ -5,7 +5,7 @@ import json
 import pandas as pd
 from google.cloud import storage
 from langchain_google_vertexai import VertexAIEmbeddings
-from langchain.vectorstores import Chroma
+from langchain_community.vectorstores import Chroma
 from google.cloud import aiplatform
 from langchain_community.document_loaders import DataFrameLoader
 
