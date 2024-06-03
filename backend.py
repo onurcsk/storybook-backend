@@ -2,9 +2,7 @@ from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.responses import JSONResponse
 from PIL import Image
 from transformers import AutoProcessor, AutoModelForCausalLM
-import torch
 from google.cloud import aiplatform
-import vertexai
 from vertexai.generative_models import GenerativeModel
 import vertexai.preview.generative_models as generative_models
 import os
