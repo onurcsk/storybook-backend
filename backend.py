@@ -30,6 +30,17 @@ persist_directory = "./raw_data/chroma_db"
 vector_db = Chroma(persist_directory=persist_directory, embedding_function=embedding_function)
 
 def create_context(genre, image_captions):
+    """
+    Creates a search query based on the genre and image captions provided by the user,
+    and performs a similarity search to retrieve relevant documents from the vector database.
+
+    Args:
+        genre (str): The genre or theme of the story.
+        image_captions (list): List of captions generated from the uploaded images.
+
+    Returns:
+        list: List of relevant documents from the vector database.
+    """
     # Setting up search query based on user provided genre/theme and image captions
     if genre:
         search_query = f"{genre}."
@@ -43,18 +54,51 @@ def create_context(genre, image_captions):
 
 
 def generate_caption(image):
+    """
+    Generates a caption for the provided image using a pre-trained BLIP image captioning model.
+
+    Args:
+        image (PIL.Image.Image): The image for which to generate a caption.
+
+    Returns:
+        str: The generated caption for the image.
+    """
     inputs = processor(images=image, return_tensors="tf")
     outputs = model.generate(**inputs)
     caption = processor.decode(outputs[0], skip_special_tokens=True)
     return caption
 
 def hash_image(image):
+    """
+    Computes the MD5 hash of the provided image.
+
+    Args:
+        image (PIL.Image.Image): The image to hash.
+
+    Returns:
+        str: The MD5 hash of the image.
+    """
     buffer = BytesIO()
     image.save(buffer, format='PNG')
     img_str = buffer.getvalue()
     return hashlib.md5(img_str).hexdigest()
 
 def generate_story(genre, num_words, reader_age, language, character_names, character_genders, image_captions):
+    """
+    Generates a story based on the provided parameters and context from the vector database.
+
+    Args:
+        genre (str): The genre or theme of the story.
+        num_words (int): The desired number of words in the story.
+        reader_age (int): The age of the intended reader.
+        language (str): The language of the story.
+        character_names (list): List of character names.
+        character_genders (list): List of character genders.
+        image_captions (list): List of captions generated from the uploaded images.
+
+    Returns:
+        str: The generated story.
+    """
     docs = create_context(genre, image_captions)
     text1 = "Write me a story."
     if genre:
@@ -62,7 +106,7 @@ def generate_story(genre, num_words, reader_age, language, character_names, char
     if reader_age:
         text1 += f" suitable for {reader_age}-year-olds"
     if language:
-        text1 += f"in {language}."
+        text1 += f"in {language}"
     if num_words:
         text1 += f" with {num_words} words"
     else:
@@ -107,6 +151,15 @@ def generate_story(genre, num_words, reader_age, language, character_names, char
 
 @app.post("/generate_caption/")
 async def generate_image_caption(file: UploadFile = File(...)):
+    """
+    Endpoint to generate a caption for an uploaded image.
+
+    Args:
+        file (UploadFile): The uploaded image file.
+
+    Returns:
+        JSONResponse: A JSON response containing the generated caption.
+    """
     image = Image.open(file.file)
     caption = generate_caption(image)
     return JSONResponse(content={"caption": caption})
@@ -121,6 +174,21 @@ async def generate_story_endpoint(
     image_captions: str = Form(None),
     language: str = Form(None)
 ):
+    """
+    Endpoint to generate a story based on user inputs.
+
+    Args:
+        genre (str): The genre or theme of the story.
+        num_words (int): The desired number of words in the story.
+        reader_age (int): The age of the intended reader.
+        character_names (str): Comma-separated character names.
+        character_genders (str): Comma-separated character genders.
+        image_captions (str): Comma-separated captions generated from uploaded images.
+        language (str): The language of the story.
+
+    Returns:
+        JSONResponse: A JSON response containing the generated story.
+    """
     character_names_list = [name.strip() for name in character_names.split(",")] if character_names else []
     character_genders_list = [gender.strip() for gender in character_genders.split(",")] if character_genders else []
 
@@ -130,6 +198,9 @@ async def generate_story_endpoint(
 
 @app.get("/")
 def hello():
+    """
+    Simple greeting endpoint.
+    """
     return {'greetings' : 'hello story lovers!'}
 
 if __name__ == "__main__":
