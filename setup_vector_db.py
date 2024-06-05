@@ -10,6 +10,12 @@ from google.cloud import aiplatform
 from langchain_community.document_loaders import DataFrameLoader
 
 def setup_vector_db():
+    """
+    Sets up the vector database by downloading JSON files from Google Cloud Storage, processing them into a
+    DataFrame, and creating a Chroma vector database using Vertex AI Embeddings.
+    Returns:
+        vector_db (Chroma): The initialized vector database.
+    """
     # Set up the client
     storage_client = storage.Client()
 
