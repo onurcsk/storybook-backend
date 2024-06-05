@@ -13,6 +13,10 @@ RUN pip install -r requirements.txt
 # Install the pysqlite3-binary package separately for use with Chroma
 RUN pip install pysqlite3-binary
 
+# Credentials for the google cloud
+ENV GOOGLE_APPLICATION_CREDENTIALS=credentials.json
+COPY raw_data/credentials.json /credentials.json
+
 # Copy the chroma_db_download.py script to the Docker image
 COPY chroma_db_download.py /chroma_db_download.py
 
