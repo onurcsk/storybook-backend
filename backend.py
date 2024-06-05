@@ -54,7 +54,7 @@ def hash_image(image):
     img_str = buffer.getvalue()
     return hashlib.md5(img_str).hexdigest()
 
-def generate_story(genre, num_words, num_characters, reader_age, language, character_names, character_genders, image_captions):
+def generate_story(genre, num_words, reader_age, language, character_names, character_genders, image_captions):
     docs = create_context(genre, image_captions)
     text1 = "Write me a story."
     if genre:
@@ -65,8 +65,6 @@ def generate_story(genre, num_words, num_characters, reader_age, language, chara
         text1 += f"in {language}."
     if num_words:
         text1 += f" with {num_words} words"
-    if num_characters:
-        text1 += f" and {num_characters} characters."
     else:
         text1 += "."
 
@@ -117,7 +115,6 @@ async def generate_image_caption(file: UploadFile = File(...)):
 async def generate_story_endpoint(
     genre: str = Form(None),
     num_words: int = Form(None),
-    num_characters: int = Form(None),
     reader_age: int = Form(None),
     character_names: str = Form(None),
     character_genders: str = Form(None),
@@ -128,7 +125,7 @@ async def generate_story_endpoint(
     character_genders_list = [gender.strip() for gender in character_genders.split(",")] if character_genders else []
 
     image_captions = [caption.strip() for caption in image_captions.split(",")] if image_captions else []
-    story = generate_story(genre, num_words, num_characters, reader_age, language, character_names_list, character_genders_list, image_captions)
+    story = generate_story(genre, num_words, reader_age, language, character_names_list, character_genders_list, image_captions)
     return JSONResponse(content={"story": story})
 
 @app.get("/")
