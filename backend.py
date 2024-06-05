@@ -56,13 +56,7 @@ def hash_image(image):
     return hashlib.md5(img_str).hexdigest()
 
 def generate_story(genre, num_words, num_characters, reader_age, character_names, character_genders, image_captions):
-    start = time.time()
     docs = create_context(genre, image_captions)
-    print(time.time() - start)
-    print(len(docs))
-    for k in range(len(docs)):
-        print(f"""\n ~~~~~ Showing document #{k+1} ~~~~~ \n""")
-        print(docs[k].page_content)
     text1 = "Write me a story."
     if genre:
         text1 = f"Write a story in the following theme or genre: {genre}"
