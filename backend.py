@@ -3,7 +3,6 @@ from fastapi.responses import JSONResponse
 from PIL import Image
 from transformers import AutoProcessor, TFBlipForConditionalGeneration
 from google.cloud import aiplatform
-import time
 from vertexai.generative_models import GenerativeModel
 import vertexai.preview.generative_models as generative_models
 import os
@@ -19,8 +18,8 @@ app = FastAPI()
 aiplatform.init(project=os.environ["GOOGLE_PROJECT_ID"], location=os.environ["GOOGLE_PROJECT_REGION"])
 
 # Load the image captioning model and processor
-processor = AutoProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
-model = TFBlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
+processor = AutoProcessor.from_pretrained("Salesforce/blip-image-captioning-large")
+model = TFBlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-large")
 
 # Load vector_db for prompt context (RAG)
 # Initialize embeddings
