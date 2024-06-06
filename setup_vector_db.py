@@ -10,6 +10,12 @@ from google.cloud import aiplatform
 from langchain_community.document_loaders import DataFrameLoader
 
 def setup_vector_db():
+    """
+    Sets up the vector database by downloading JSON files from Google Cloud Storage, processing them into a
+    DataFrame, and creating a Chroma vector database using Vertex AI Embeddings.
+    Returns:
+        vector_db (Chroma): The initialized vector database.
+    """
     # Set up the client
     storage_client = storage.Client()
 
@@ -19,7 +25,7 @@ def setup_vector_db():
 
     # Create empty list and loop through the 10 json files
     data = []
-    for i in range(10):
+    for i in range(3): # taking just 3 out of 10
         blob_name_i = f'Children-Stories-Collection/Children-Stories-{i}-Final.json'
         blob_i = bucket.blob(blob_name_i)
         elevations_i = blob_i.download_as_string()
@@ -43,7 +49,7 @@ def setup_vector_db():
     # Ensure 'prompt' column exists in df
     assert 'text' in df.columns, "'text' column not found in DataFrame"
 
-    loader = DataFrameLoader(df.sample(5), page_content_column="text")
+    loader = DataFrameLoader(df, page_content_column="text")
     documents = loader.load()
 
     # Create vector database
